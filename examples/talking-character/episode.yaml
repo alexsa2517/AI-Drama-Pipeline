@@ -1,0 +1,24 @@
+id: EP-TALK-001
+title: "The Whispering Forest - Talking Character Demo"
+logline: "A traveler hears a voice in the forbidden forest and answers it."
+genre: dark fantasy
+language: th
+characters:
+  - id: CHAR-001
+    name: The Traveler
+    role: protagonist
+    appearance: "male traveler, late 20s, dark weathered cloak, consistent face, brown eyes, short dark hair"
+    personality: "cautious, frightened, determined"
+    continuity_notes: "Keep face, eye color, hairstyle, cloak, age and proportions identical in every shot."
+scenes:
+  - id: SC001
+    title: "The Voice"
+    location: "forbidden forest"
+    time: "night"
+    action: "The traveler stops, looks toward the trees, and realizes the voice is calling his name."
+    speaker: "CHAR-001"
+    dialogue: "ใครอยู่ตรงนั้น... ทำไมถึงเรียกชื่อฉัน?"
+    emotion: "fear mixed with curiosity"
+    delivery: "quiet, breathy, natural Thai speech with a short pause"
+    narration: "เสียงหนึ่งเรียกชื่อเขาจากความมืด..."
+    duration_seconds: 8
