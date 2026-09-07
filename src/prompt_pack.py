@@ -7,6 +7,7 @@ from .dialogue_scene import build_camera_plan, build_conversation_prompt
 from .speech_pipeline import build_dialogue_video_prompt
 from .shot_director import build_shot_director_prompt
 from .timeline import build_dialogue_timeline, build_timeline_prompt
+from .audio_direction import build_audio_direction
 
 
 def build_scene_pack(episode: dict) -> list[dict]:
@@ -18,6 +19,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
         shot_director = build_shot_director_prompt(scene)
         timeline = build_dialogue_timeline(scene)
         timeline_prompt = build_timeline_prompt(scene)
+        audio_direction = build_audio_direction(scene)
         dialogue_video = build_dialogue_video_prompt(episode, scene)
         video_parts = [build_video_prompt(episode, scene)]
         if dialogue_video:
@@ -27,6 +29,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
             video_parts.append("CAMERA PLAN:\n" + "\n".join(f"- {shot}" for shot in camera_plan))
             video_parts.append(shot_director)
             video_parts.append(timeline_prompt)
+        video_parts.append(audio_direction)
         video_parts.append(build_character_animation_context(episode, scene))
         video_parts.append(scene_continuity_context(episode, index))
         packs.append({
@@ -38,5 +41,6 @@ def build_scene_pack(episode: dict) -> list[dict]:
             "camera_plan": camera_plan,
             "shot_director": shot_director,
             "dialogue_timeline": timeline,
+            "audio_direction": audio_direction,
         })
     return packs
