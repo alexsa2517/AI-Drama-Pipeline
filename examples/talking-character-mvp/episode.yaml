@@ -1,59 +1,130 @@
-id: talking-character-mvp
-title: "The Meeting After Midnight"
-logline: "Two coworkers confront each other in the same office after discovering a dangerous secret."
-genre: "cinematic thriller"
+id: baba-yaga-ep01
+title: "อย่าเอ่ยชื่อเธอ"
+logline: "Elena enters Baba Yaga's hut searching for her missing mother, only to learn that the witch knows where her mother is — and that something is standing behind her."
+genre: "dark folklore thriller"
 language: "th"
 characters:
   - id: CHAR-001
-    name: "Narin"
-    role: "manager"
-    appearance: "Thai man, 35, black hair, charcoal suit, white shirt, dark watch"
-    personality: "controlled, suspicious, decisive"
-    continuity_notes: "Face, hairstyle, suit, shirt, watch and body proportions never change."
+    name: "Elena"
+    role: "protagonist"
+    appearance: "หญิงสาวชาวยุโรปตะวันออกวัย 25 ปี ผมยาวสีน้ำตาลเข้ม เสื้อโค้ตสีเข้ม ผ้าพันคอสีแดงเข้ม รองเท้าบูตหนัง และกระเป๋าสะพายเก่า"
+    personality: "กล้าหาญ ระมัดระวัง ดื้อดึง และกำลังหวาดกลัวเรื่องแม่ที่หายตัวไป"
+    continuity_notes: "ห้ามเปลี่ยนใบหน้า ทรงผม เสื้อโค้ต ผ้าพันคอ รองเท้า กระเป๋า หรือสัดส่วนร่างกายในทุกช็อต"
     voice:
       provider: "gtts"
       language: "th"
       slow: false
   - id: CHAR-002
-    name: "Mali"
-    role: "employee"
-    appearance: "Thai woman, 29, long black hair, navy blouse, silver earrings"
-    personality: "calm, intelligent, nervous underneath"
-    continuity_notes: "Face, hairstyle, blouse, earrings and body proportions never change."
+    name: "Baba Yaga"
+    role: "supernatural witch"
+    appearance: "หญิงชราร่างผอมสูง ผมขาวยาวยุ่ง ใบหน้าซีดมีริ้วรอยลึก ดวงตาคม เสื้อคลุมสีดำเก่า ผ้าคลุมไหล่สีเทา และมือผอมยาว"
+    personality: "ลึกลับ เยือกเย็น เจ้าเล่ห์ และเหมือนรู้ความจริงทุกอย่าง"
+    continuity_notes: "ห้ามเปลี่ยนใบหน้า ผม เสื้อคลุม ผ้าคลุมไหล่ มือ หรือสัดส่วนร่างกายในทุกช็อต"
     voice:
       provider: "gtts"
       language: "th"
       slow: false
 scenes:
   - id: TALK-001
-    title: "The Midnight Meeting"
-    location: "บริษัท ABC ชั้น 15 ห้องประชุมใหญ่"
-    time: "กลางคืน"
-    action: "Narin and Mali face each other across the same conference table."
-    duration_seconds: 16
-    environment_lock: "ABSOLUTE: same company, same 15th-floor conference room, same architecture, table, doors, windows and lighting. Camera angles may change but location cannot change."
+    title: "กระท่อมกลางป่า"
+    location: "กระท่อมของ Baba Yaga กลางป่าลึก"
+    time: "กลางคืน ฝนเพิ่งหยุด พื้นไม้และหน้าต่างมีหยดน้ำ"
+    action: "Elena ยืนอยู่ด้านในกระท่อมตรงข้าม Baba Yaga โดยมีโต๊ะไม้เก่าอยู่ระหว่างทั้งสอง"
+    duration_seconds: 24
+    environment_lock: "ABSOLUTE: กระท่อมของ Baba Yaga เดิมตลอดทั้งฉาก ห้ามเปลี่ยนเป็นบ้าน ถนน ป่า ห้องอื่น โกดัง หรือสถานที่อื่น ห้ามเปลี่ยนตำแหน่งโต๊ะ เตาผิง ประตู หน้าต่าง ผนังไม้ หรือแสงเทียน กล้องเปลี่ยนมุมได้เฉพาะเพื่อถ่ายพื้นที่จริงเดิม"
+    visual_anchor: "กระท่อมไม้เก่าเพดานต่ำ โต๊ะไม้เก่าตรงกลาง เตาผิงหินด้านซ้าย หน้าต่างไม้ด้านหลังขวา ประตูทางเข้าอยู่ด้านหลัง Elena เทียนสามเล่มบนโต๊ะ แสงส้มจากเตาผิงตัดกับแสงน้ำเงินเย็นจากหน้าต่าง"
     dialogue_lines:
       - turn: 1
         speaker: "CHAR-001"
-        dialogue: "คุณรู้เรื่องนี้มานานแค่ไหนแล้ว"
-        emotion: "suspicious"
-        delivery: "quiet, controlled"
-        pause_after: 0.35
+        dialogue: "คุณคือ Baba Yaga ใช่ไหม"
+        emotion: "fearful but determined"
+        delivery: "quiet, cautious"
+        pause_after: 0.45
       - turn: 2
         speaker: "CHAR-002"
-        dialogue: "ฉันเพิ่งรู้เมื่อคืนนี้"
-        emotion: "nervous but composed"
-        delivery: "soft, natural"
-        pause_after: 0.35
+        dialogue: "ในที่สุดเจ้าก็มาถึง"
+        emotion: "cold amusement"
+        delivery: "slow, low, unsettling"
+        pause_after: 0.5
       - turn: 3
         speaker: "CHAR-001"
-        dialogue: "แล้วทำไมคุณถึงไม่บอกผม"
-        emotion: "controlled anger"
-        delivery: "low voice, restrained"
-        pause_after: 0.4
+        dialogue: "คุณรู้จักแม่ของฉัน"
+        emotion: "suspicious"
+        delivery: "controlled, urgent"
+        pause_after: 0.45
       - turn: 4
         speaker: "CHAR-002"
-        dialogue: "เพราะถ้าฉันบอกคุณ เราทั้งคู่จะไม่มีทางออก"
-        emotion: "fear and determination"
-        delivery: "quiet, serious"
+        dialogue: "รู้สิ ข้ารู้ว่าแม่ของเจ้าอยู่ที่ไหน"
+        emotion: "ominous certainty"
+        delivery: "soft, deliberate"
+        pause_after: 0.6
+      - turn: 5
+        speaker: "CHAR-001"
+        dialogue: "แล้วแม่ฉันอยู่ที่ไหน"
+        emotion: "fear and desperation"
+        delivery: "barely controlled"
         pause_after: 0.5
+      - turn: 6
+        speaker: "CHAR-002"
+        dialogue: "อย่าหันกลับไป"
+        emotion: "warning, absolute seriousness"
+        delivery: "whispered, very slow"
+        pause_after: 0.8
+      - turn: 7
+        speaker: "CHAR-001"
+        dialogue: "ทำไม"
+        emotion: "confused fear"
+        delivery: "whisper"
+        pause_after: 0.4
+      - turn: 8
+        speaker: "CHAR-002"
+        dialogue: "เพราะสิ่งที่ยืนอยู่ข้างหลังเจ้า ไม่ใช่แม่ของเจ้า"
+        emotion: "terrifying calm"
+        delivery: "quiet, final, chilling"
+        pause_after: 0.8
+    music_direction: "ADAPTIVE: เริ่มด้วยความเงียบและเสียงบรรยากาศกระท่อม เมื่อ Baba Yaga พูดให้มีดนตรีต่ำมากได้เฉพาะถ้าช่วยเพิ่มความกดดัน ก่อนประโยค 'อย่าหันกลับไป' ให้ลดหรือหยุดดนตรีเพื่อเน้นเสียงพูดและความเงียบ หลังประโยคสุดท้ายสามารถจบด้วย silence และ cut to black"
+    shots:
+      - shot: 1
+        type: "wide two-shot"
+        purpose: "ยืนยันตำแหน่ง Elena และ Baba Yaga ในกระท่อมเดิม พร้อมโต๊ะ เตาผิง หน้าต่าง และประตู"
+      - shot: 2
+        type: "medium close-up"
+        subject: "CHAR-001"
+        dialogue_turn: 1
+        purpose: "Elena ถามอย่างระวัง มอง Baba Yaga โดยตรง"
+      - shot: 3
+        type: "over-the-shoulder"
+        subject: "CHAR-002"
+        dialogue_turn: 2
+        purpose: "Baba Yaga ตอบโดยยังอยู่ตำแหน่งเดิมในกระท่อม"
+      - shot: 4
+        type: "close-up"
+        subject: "CHAR-001"
+        dialogue_turn: 3
+        purpose: "จับสายตาและความสงสัยของ Elena"
+      - shot: 5
+        type: "close-up"
+        subject: "CHAR-002"
+        dialogue_turn: 4
+        purpose: "Baba Yaga พูดอย่างมั่นใจและน่ากลัว"
+      - shot: 6
+        type: "reaction close-up"
+        subject: "CHAR-001"
+        dialogue_turn: 5
+        purpose: "Elena แสดงความกลัวและความสิ้นหวัง"
+      - shot: 7
+        type: "extreme close-up"
+        subject: "CHAR-002"
+        dialogue_turn: 6
+        purpose: "Baba Yaga เตือนว่าอย่าหันกลับไป"
+      - shot: 8
+        type: "reaction close-up"
+        subject: "CHAR-001"
+        dialogue_turn: 7
+        purpose: "Elena ชะงัก ไม่หันกลับทันที"
+      - shot: 9
+        type: "slow push-in"
+        subject: "CHAR-002"
+        dialogue_turn: 8
+        purpose: "คำพูดสุดท้ายของ Baba Yaga ก่อนตัดดำ"
+    status: "ready_for_colab_test"
