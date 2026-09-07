@@ -13,7 +13,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import yaml
-
 from src.prompt_pack import build_scene_pack
 
 
@@ -39,9 +38,11 @@ def generate_shot_manifest(episode: dict, out: Path) -> Path:
                 "audio_direction": pack.get("audio_direction", ""),
             })
     payload = {
-        "version": "2.1", "automation": "one-command",
+        "version": "3.0", "automation": "gemini-flash-plus-veo-one-command",
         "environment_policy": "same physical environment unless the script explicitly changes location",
         "speaker_policy": "only active speaker moves mouth; listener stays silent",
+        "planning_model": os.getenv("GEMINI_FLASH_MODEL", "gemini-3.8-flash"),
+        "video_model": os.getenv("VEO_MODEL", "veo-3.1-generate-preview"),
         "shots": shots,
     }
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -50,7 +51,7 @@ def generate_shot_manifest(episode: dict, out: Path) -> Path:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="One-command AI Drama Pipeline")
+    parser = argparse.ArgumentParser(description="One-command AI Drama Pipeline: Gemini Flash director + reference images + Veo + lip-sync")
     parser.add_argument("episode")
     parser.add_argument("--scene", default=None)
     parser.add_argument("--audio-dir", default="outputs/two_character_audio")
@@ -71,45 +72,53 @@ def main() -> None:
             raise ValueError(f"Scene not found: {args.scene}")
         episode = {**episode, "scenes": scenes}
 
+    if not os.getenv("GEMINI_API_KEY"):
+        raise RuntimeError("GEMINI_API_KEY is required for Gemini Flash + Veo automation.")
+
     automation_dir = ROOT / "outputs" / "automation"
     shot_manifest = generate_shot_manifest(episode, automation_dir / "shot_manifest.json")
-    print(f"[1/4] Shot manifest: {shot_manifest}")
+    print(f"[1/7] Shot manifest: {shot_manifest}")
+
+    run([sys.executable, str(ROOT / "scripts" / "gemini_flash_director.py"), str(shot_manifest), str(episode_path), str(automation_dir / "gemini_shot_manifest.json"), *( ["--scene", args.scene] if args.scene else [] )])
+    shot_manifest = automation_dir / "gemini_shot_manifest.json"
+    print(f"[2/7] Gemini Flash director: {shot_manifest}")
+
+    run([sys.executable, str(ROOT / "scripts" / "generate_reference_assets.py"), str(episode_path), str(ROOT / "outputs" / "references"), *( ["--scene", args.scene] if args.scene else [] )])
+    print("[3/7] Character/environment references ready")
 
     run([sys.executable, str(ROOT / "scripts" / "generate_two_character_audio.py"), str(episode_path), *( ["--scene", args.scene] if args.scene else [] ), "--out", args.audio_dir])
-    print("[2/4] Dialogue audio generated")
+    print("[4/7] Dialogue audio generated")
 
     conversation_manifest = ROOT / args.audio_dir / "conversation_manifest.json"
     run([sys.executable, str(ROOT / "scripts" / "build_conversation_manifest.py"), str(episode_path), "--scene", args.scene or scenes[0]["id"], "--audio-dir", args.audio_dir, "--out", str(conversation_manifest)])
-    print(f"[3/4] Real-audio timing: {conversation_manifest}")
+    print(f"[5/7] Real-audio timing: {conversation_manifest}")
 
     if args.skip_video_provider:
         print("VIDEO PROVIDER SKIPPED: manifests are ready.")
         return
 
-    # Prefer the built-in Google Veo adapter when GEMINI_API_KEY is present.
-    # A custom VIDEO_GENERATOR_CMD remains supported for other providers.
     provider = os.getenv("VIDEO_GENERATOR_CMD", "").strip()
     if provider:
         run(shlex.split(provider) + [str(shot_manifest), str(ROOT / args.video_dir)])
-    elif os.getenv("GEMINI_API_KEY"):
+    else:
         run([
             sys.executable, str(ROOT / "scripts" / "generate_veo_videos.py"),
             str(shot_manifest), str(ROOT / args.video_dir),
+            "--reaction-dir", str(ROOT / args.reaction_dir),
+            "--references", str(ROOT / "outputs" / "references"),
             "--scene", args.scene or scenes[0]["id"],
         ])
-    else:
-        print("No video provider configured. Set GEMINI_API_KEY for automatic Veo generation, or VIDEO_GENERATOR_CMD for another provider.")
-        print(f"Shot manifest ready: {shot_manifest}")
-        return
+    print("[6/7] Veo video shots generated")
 
     run([
-        sys.executable, str(ROOT / "scripts" / "render_two_character_conversation.py"),
+        sys.executable,
+        str(ROOT / "scripts" / "render_two_character_conversation.py"),
         str(conversation_manifest), "--video-dir", args.video_dir,
         "--reaction-dir", args.reaction_dir,
         "--wav2lip-dir", args.wav2lip_dir,
         "--checkpoint", args.checkpoint, "--out", args.out,
     ])
-    print(f"[4/4] FINAL VIDEO: {ROOT / args.out}")
+    print(f"[7/7] FINAL VIDEO: {ROOT / args.out}")
 
 
 if __name__ == "__main__":
