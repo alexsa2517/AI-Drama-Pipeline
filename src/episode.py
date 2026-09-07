@@ -3,7 +3,8 @@ import json
 import yaml
 
 from .validator import validate_episode
-from .prompt_builder import build_image_prompt, build_video_prompt, build_voice_prompt
+from .prompt_pack import build_scene_pack
+from .quality import quality_report
 
 
 def load_episode(path: str) -> dict:
@@ -27,20 +28,32 @@ def generate_episode(path: str, output_root: str = "output") -> Path:
         encoding="utf-8",
     )
 
-    for scene in data["scenes"]:
-        image = build_image_prompt(data, scene)
-        video = build_video_prompt(data, scene)
-        voice = build_voice_prompt(data, scene)
-        sid = scene["id"]
-        (scenes_out / f"{sid}-image.md").write_text(f"# {sid} Image Prompt\n\n{image}\n", encoding="utf-8")
-        (scenes_out / f"{sid}-video.md").write_text(f"# {sid} Video Prompt\n\n{video}\n", encoding="utf-8")
-        (scenes_out / f"{sid}-voice.md").write_text(f"# {sid} Voice Prompt\n\n{voice}\n", encoding="utf-8")
+    scene_packs = build_scene_pack(data)
+    for pack in scene_packs:
+        sid = pack["scene_id"]
+        (scenes_out / f"{sid}-image.md").write_text(
+            f"# {sid} Image Prompt\n\n{pack['image']}\n", encoding="utf-8"
+        )
+        (scenes_out / f"{sid}-video.md").write_text(
+            f"# {sid} Video Prompt\n\n{pack['video']}\n", encoding="utf-8"
+        )
+        (scenes_out / f"{sid}-voice.md").write_text(
+            f"# {sid} Voice Prompt\n\n{pack['voice']}\n", encoding="utf-8"
+        )
+
+    report = quality_report(data)
+    (out / "quality.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     manifest = {
         "episode_id": data["id"],
         "title": data["title"],
         "scene_count": len(data["scenes"]),
-        "status": "prompt-pack-generated",
+        "quality": report,
+        "status": "ready-for-human-review" if report["ready"] else "quality-gate-failed",
     }
-    (out / "production.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    (out / "production.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     return out
