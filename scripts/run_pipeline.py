@@ -29,21 +29,17 @@ def generate_shot_manifest(episode: dict, out: Path) -> Path:
         scene = next(s for s in episode.get("scenes", []) if s["id"] == pack["scene_id"])
         for shot in pack.get("camera_plan", []):
             shots.append({
-                "scene_id": scene["id"],
-                "shot": shot,
-                "location": scene.get("location", ""),
-                "time": scene.get("time", ""),
+                "scene_id": scene["id"], "shot": shot,
+                "location": scene.get("location", ""), "time": scene.get("time", ""),
                 "visual_anchor": scene.get("visual_anchor", ""),
                 "environment_lock": scene.get("environment_lock", ""),
                 "characters": episode.get("characters", []),
-                "image_prompt": pack["image"],
-                "video_prompt": pack["video"],
+                "image_prompt": pack["image"], "video_prompt": pack["video"],
                 "dialogue": pack.get("dialogue", ""),
                 "audio_direction": pack.get("audio_direction", ""),
             })
     payload = {
-        "version": "2.0",
-        "automation": "one-command",
+        "version": "2.1", "automation": "one-command",
         "environment_policy": "same physical environment unless the script explicitly changes location",
         "speaker_policy": "only active speaker moves mouth; listener stays silent",
         "shots": shots,
@@ -63,7 +59,7 @@ def main() -> None:
     parser.add_argument("--wav2lip-dir", default=os.getenv("WAV2LIP_DIR", "/content/Wav2Lip"))
     parser.add_argument("--checkpoint", default=os.getenv("WAV2LIP_CHECKPOINT", "/content/Wav2Lip/checkpoints/wav2lip_gan.pth"))
     parser.add_argument("--out", default="outputs/final/two_character_conversation.mp4")
-    parser.add_argument("--skip-video-provider", action="store_true", help="Only prepare prompts/audio/timing; do not call a video provider")
+    parser.add_argument("--skip-video-provider", action="store_true")
     args = parser.parse_args()
 
     episode_path = ROOT / args.episode
@@ -87,30 +83,31 @@ def main() -> None:
     print(f"[3/4] Real-audio timing: {conversation_manifest}")
 
     if args.skip_video_provider:
-        print("VIDEO PROVIDER SKIPPED: shot_manifest.json is ready for the configured video generator.")
+        print("VIDEO PROVIDER SKIPPED: manifests are ready.")
         return
 
+    # Prefer the built-in Google Veo adapter when GEMINI_API_KEY is present.
+    # A custom VIDEO_GENERATOR_CMD remains supported for other providers.
     provider = os.getenv("VIDEO_GENERATOR_CMD", "").strip()
     if provider:
-        # Provider command receives the manifest path and is responsible for creating
-        # speaker-specific clips named turn{N}_{SPEAKER}.mp4 in --video-dir.
-        command = shlex.split(provider) + [str(shot_manifest), str(ROOT / args.video_dir)]
-        run(command)
+        run(shlex.split(provider) + [str(shot_manifest), str(ROOT / args.video_dir)])
+    elif os.getenv("GEMINI_API_KEY"):
+        run([
+            sys.executable, str(ROOT / "scripts" / "generate_veo_videos.py"),
+            str(shot_manifest), str(ROOT / args.video_dir),
+            "--scene", args.scene or scenes[0]["id"],
+        ])
     else:
-        print("VIDEO_GENERATOR_CMD is not configured. The pipeline will not fake video generation.")
-        print("Configure one video-generation adapter once; then this same command will continue automatically.")
+        print("No video provider configured. Set GEMINI_API_KEY for automatic Veo generation, or VIDEO_GENERATOR_CMD for another provider.")
         print(f"Shot manifest ready: {shot_manifest}")
         return
 
     run([
-        sys.executable,
-        str(ROOT / "scripts" / "render_two_character_conversation.py"),
-        str(conversation_manifest),
-        "--video-dir", args.video_dir,
+        sys.executable, str(ROOT / "scripts" / "render_two_character_conversation.py"),
+        str(conversation_manifest), "--video-dir", args.video_dir,
         "--reaction-dir", args.reaction_dir,
         "--wav2lip-dir", args.wav2lip_dir,
-        "--checkpoint", args.checkpoint,
-        "--out", args.out,
+        "--checkpoint", args.checkpoint, "--out", args.out,
     ])
     print(f"[4/4] FINAL VIDEO: {ROOT / args.out}")
 
