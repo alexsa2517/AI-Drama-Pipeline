@@ -1,0 +1,29 @@
+id: episode-001
+title: "The Whispering Forest"
+logline: "A traveler enters a forbidden forest and hears a voice calling his name from the darkness."
+genre: "dark fantasy"
+language: "th"
+characters:
+  - id: CHAR-001
+    name: "The Traveler"
+    role: "protagonist"
+    appearance: "young adult traveler, dark cloak, weathered leather satchel"
+    personality: "cautious, curious, determined"
+    continuity_notes: "Keep face, cloak, satchel and body proportions consistent in every scene."
+scenes:
+  - id: SC001
+    title: "The Voice"
+    location: "ancient forest path"
+    time: "night"
+    action: "The traveler stops as a whisper comes from deep between the trees, calling his name."
+    narration: "คืนนั้น... เขาได้ยินเสียงหนึ่งเรียกชื่อของเขา จากที่ที่ไม่ควรมีใครอยู่"
+    duration_seconds: 8
+    status: "draft"
+  - id: SC002
+    title: "The Shadow"
+    location: "ancient forest clearing"
+    time: "night"
+    action: "A tall unnatural shadow appears behind the traveler while he looks toward the empty clearing."
+    narration: "แต่เมื่อเขาหันกลับไป... สิ่งที่ยืนอยู่ข้างหลัง กลับไม่ใช่มนุษย์"
+    duration_seconds: 8
+    status: "draft"
