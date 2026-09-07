@@ -1,2 +1,4 @@
 PyYAML>=6.0,<7
 pytest>=8.0,<9
+gTTS>=2.5,<3
+pydub>=0.25,<1
