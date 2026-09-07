@@ -1,0 +1,59 @@
+id: talking-character-mvp
+title: "The Meeting After Midnight"
+logline: "Two coworkers confront each other in the same office after discovering a dangerous secret."
+genre: "cinematic thriller"
+language: "th"
+characters:
+  - id: CHAR-001
+    name: "Narin"
+    role: "manager"
+    appearance: "Thai man, 35, black hair, charcoal suit, white shirt, dark watch"
+    personality: "controlled, suspicious, decisive"
+    continuity_notes: "Face, hairstyle, suit, shirt, watch and body proportions never change."
+    voice:
+      provider: "gtts"
+      language: "th"
+      slow: false
+  - id: CHAR-002
+    name: "Mali"
+    role: "employee"
+    appearance: "Thai woman, 29, long black hair, navy blouse, silver earrings"
+    personality: "calm, intelligent, nervous underneath"
+    continuity_notes: "Face, hairstyle, blouse, earrings and body proportions never change."
+    voice:
+      provider: "gtts"
+      language: "th"
+      slow: false
+scenes:
+  - id: TALK-001
+    title: "The Midnight Meeting"
+    location: "บริษัท ABC ชั้น 15 ห้องประชุมใหญ่"
+    time: "กลางคืน"
+    action: "Narin and Mali face each other across the same conference table."
+    duration_seconds: 16
+    environment_lock: "ABSOLUTE: same company, same 15th-floor conference room, same architecture, table, doors, windows and lighting. Camera angles may change but location cannot change."
+    dialogue_lines:
+      - turn: 1
+        speaker: "CHAR-001"
+        dialogue: "คุณรู้เรื่องนี้มานานแค่ไหนแล้ว"
+        emotion: "suspicious"
+        delivery: "quiet, controlled"
+        pause_after: 0.35
+      - turn: 2
+        speaker: "CHAR-002"
+        dialogue: "ฉันเพิ่งรู้เมื่อคืนนี้"
+        emotion: "nervous but composed"
+        delivery: "soft, natural"
+        pause_after: 0.35
+      - turn: 3
+        speaker: "CHAR-001"
+        dialogue: "แล้วทำไมคุณถึงไม่บอกผม"
+        emotion: "controlled anger"
+        delivery: "low voice, restrained"
+        pause_after: 0.4
+      - turn: 4
+        speaker: "CHAR-002"
+        dialogue: "เพราะถ้าฉันบอกคุณ เราทั้งคู่จะไม่มีทางออก"
+        emotion: "fear and determination"
+        delivery: "quiet, serious"
+        pause_after: 0.5
