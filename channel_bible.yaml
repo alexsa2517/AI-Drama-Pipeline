@@ -1,0 +1,66 @@
+channel:
+  name: "MYTHIC ARCHIVES"
+  tagline: "Forgotten Legends. Cinematic Stories."
+  language: "en"
+  primary_market: "global English-speaking audience"
+  format: "faceless cinematic mythology storytelling"
+  core_promise: "Turn ancient myths and legends into short, cinematic stories with a clear hook, emotional escalation, and a memorable reveal."
+
+content_pillars:
+  - "Mythology"
+  - "Ancient legends"
+  - "Folklore"
+  - "Mythic creatures"
+  - "Origins of rituals, symbols, and legendary stories"
+
+allowed_traditions:
+  - "Egyptian"
+  - "Greek"
+  - "Norse"
+  - "Japanese"
+  - "Slavic"
+  - "African"
+  - "Mesopotamian"
+  - "Celtic"
+  - "Mesoamerican"
+  - "South Asian"
+  - "Other documented world traditions"
+
+not_allowed:
+  - "general news"
+  - "politics"
+  - "crypto and finance"
+  - "AI tutorials/reviews"
+  - "generic motivational content"
+  - "random AI animal stories"
+  - "unrelated celebrity content"
+
+editorial_rules:
+  - "Separate historical evidence from later tradition, interpretation, and dramatization."
+  - "Never present a modern invention as an ancient fact."
+  - "Prefer primary/academic/reference sources when researching a myth."
+  - "Use original narration and original visual direction rather than copying another creator."
+  - "Every episode must have a strong opening question, danger, mystery, or impossible claim."
+  - "Every episode must deliver a payoff; do not manufacture empty suspense."
+  - "Human review is required before publication."
+
+shorts_target:
+  duration_seconds: 45
+  max_duration_seconds: 60
+  structure:
+    hook_seconds: "0-3"
+    mystery_seconds: "3-10"
+    escalation_seconds: "10-25"
+    reveal_seconds: "25-40"
+    twist_or_meaning_seconds: "40-52"
+    open_loop_seconds: "52-60"
+
+story_score:
+  threshold: 75
+  weights:
+    hook: 25
+    curiosity: 20
+    emotional_impact: 15
+    myth_significance: 15
+    visual_potential: 15
+    originality: 10

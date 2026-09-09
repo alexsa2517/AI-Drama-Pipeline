@@ -1,0 +1,98 @@
+id: mythic-archives-001
+title: "The Scales of Anubis"
+logline: "In ancient Egyptian belief, the dead faced a final judgment: if the heart was heavier than the feather of Ma'at, the soul could not pass onward."
+genre: "mythology"
+language: "en"
+channel: "MYTHIC ARCHIVES"
+format: "shorts"
+
+research:
+  tradition: "ancient Egyptian funerary belief"
+  claim_labels:
+    - claim: "Anubis is associated with funerary rites and the judgment of the dead."
+      type: "TRADITION"
+    - claim: "The heart is weighed against the feather associated with Ma'at."
+      type: "TRADITION"
+    - claim: "The exact ritual sequence varied across periods and sources."
+      type: "FACT"
+  source_note: "Research against museum, academic, and primary-text references before publication."
+
+story_score:
+  hook: 92
+  curiosity: 94
+  emotional_impact: 86
+  myth_significance: 98
+  visual_potential: 97
+  originality: 82
+
+characters:
+  - id: CHAR-001
+    name: "Anubis"
+    role: "guide and guardian of the judgment"
+    appearance: "anthropomorphic jackal-headed deity, black polished skin, linen ceremonial garments, gold collar and armbands, imposing but controlled presence"
+    personality: "solemn, impartial, ancient, watchful"
+    continuity_notes: "Keep jackal head, facial proportions, black skin, linen garments, gold collar and armbands consistent in every scene."
+  - id: CHAR-002
+    name: "The Soul"
+    role: "the deceased being judged"
+    appearance: "adult Egyptian traveler from the ancient world, simple white linen clothing, anxious expression, restrained movement"
+    personality: "frightened, hopeful, reflective"
+    continuity_notes: "Keep face, hairstyle, linen clothing and body proportions consistent in every scene."
+
+scenes:
+  - id: SC001
+    title: "The Final Door"
+    location: "ancient Egyptian judgment hall"
+    time: "timeless afterlife"
+    action: "The Soul approaches a vast stone hall where Anubis waits beside a golden balance."
+    narration: "What if the final judgment of your soul came down to the weight of your heart?"
+    duration_seconds: 8
+    status: "draft"
+  - id: SC002
+    title: "The Guardian"
+    location: "ancient Egyptian judgment hall"
+    time: "timeless afterlife"
+    action: "Anubis silently raises one hand toward the balance, signaling that the judgment is about to begin."
+    narration: "In ancient Egyptian tradition, Anubis stood among the gods who guided the dead through judgment."
+    duration_seconds: 8
+    status: "draft"
+  - id: SC003
+    title: "The Heart"
+    location: "ancient Egyptian judgment hall"
+    time: "timeless afterlife"
+    action: "A luminous human heart is placed on one pan of the balance while the feather of Ma'at rests on the other."
+    narration: "On one side: the heart. On the other: the feather of Ma'at, symbol of truth and cosmic order."
+    duration_seconds: 8
+    status: "draft"
+  - id: SC004
+    title: "The Silence"
+    location: "ancient Egyptian judgment hall"
+    time: "timeless afterlife"
+    action: "The balance begins to move as the Soul watches in complete silence."
+    narration: "The frightening part was not the blade, or the monster. It was the silence while the scales moved."
+    duration_seconds: 8
+    status: "draft"
+  - id: SC005
+    title: "The Measure"
+    location: "ancient Egyptian judgment hall"
+    time: "timeless afterlife"
+    action: "Anubis studies the balance without emotion as golden light reveals the feather remaining level."
+    narration: "The heart was not simply being measured for guilt. The judgment reflected whether a life was in harmony with Ma'at."
+    duration_seconds: 8
+    status: "draft"
+  - id: SC006
+    title: "The Meaning"
+    location: "ancient Egyptian judgment hall"
+    time: "timeless afterlife"
+    action: "The Soul looks at the balanced scales while the vast hall slowly fills with warm light."
+    narration: "For the ancient Egyptians, the question after death was not only where you would go... but how you had lived."
+    duration_seconds: 8
+    status: "draft"
+  - id: SC007
+    title: "The Archive"
+    location: "ancient Egyptian judgment hall"
+    time: "timeless afterlife"
+    action: "The camera pulls back from the balance into darkness, leaving the feather glowing at the center of the hall."
+    narration: "And that was only one chapter in the ancient Egyptian journey beyond death."
+    duration_seconds: 8
+    status: "draft"
