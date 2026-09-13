@@ -6,6 +6,7 @@ from .animation_rules import build_character_animation_context
 from .ai_acting_director import build_acting_prompt
 from .professional_director import build_professional_director_prompt
 from .cinematography_director import build_cinematography_prompt
+from .legend_fact_engine import build_fact_first_policy, build_story_guardrail_prompt
 from .dialogue_scene import build_camera_plan, build_conversation_prompt
 from .speech_pipeline import build_dialogue_video_prompt
 from .shot_director import build_shot_director_prompt
@@ -15,6 +16,14 @@ from .audio_direction import build_audio_direction
 
 def build_scene_pack(episode: dict) -> list[dict]:
     character_context = build_character_context(episode)
+    is_legend = str(episode.get("content_type", "")).lower() == "legend" or str(episode.get("genre", "")).lower() in {"legend", "folklore", "myth", "mythology", "dark folklore thriller"}
+    fact_policy = build_fact_first_policy() if is_legend else ""
+    story_guardrail = build_story_guardrail_prompt() if is_legend else ""
+    provenance = episode.get("research_claims", [])
+    provenance_text = ""
+    if is_legend:
+        provenance_text = "RESEARCH CLAIM LEDGER\n" + (str(provenance) if provenance else "NO CLAIM LEDGER PROVIDED — DO NOT ASSERT HISTORICAL FACTS; RESEARCH MUST PRECEDE FINAL SCRIPT.")
+
     packs = []
     for index, scene in enumerate(episode.get("scenes", [])):
         visual_lock = build_scene_visual_lock(scene)
@@ -43,6 +52,10 @@ def build_scene_pack(episode: dict) -> list[dict]:
         video_parts.append(audio_direction)
         video_parts.append(acting_director)
         video_parts.append(build_character_animation_context(episode, scene))
+        if is_legend:
+            video_parts.append(fact_policy)
+            video_parts.append(story_guardrail)
+            video_parts.append(provenance_text)
         video_parts.append(scene_continuity_context(episode, index))
         packs.append({
             "scene_id": scene["id"],
@@ -58,5 +71,6 @@ def build_scene_pack(episode: dict) -> list[dict]:
             "shot_director": shot_director,
             "dialogue_timeline": timeline,
             "audio_direction": audio_direction,
+            "fact_first": is_legend,
         })
     return packs
