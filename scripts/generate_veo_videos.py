@@ -74,10 +74,15 @@ def main() -> None:
 
         if is_reaction:
             output = reaction_dir / f"turn{turn}_{subject}.mp4"
-            role_instruction = f"REACTION SHOT: {subject} is the silent listener. Do not move the mouth or speak. Use natural blinking, gaze toward the active speaker, breathing and subtle facial reaction."
+            role_instruction = f"REACTION SHOT: {subject} is the silent listener. Do not speak. Keep the lips closed and still. Use natural blinking, gaze toward the active speaker, breathing and subtle facial reaction."
         else:
             output = out_dir / f"turn{turn}_{subject}.mp4"
-            role_instruction = f"ACTIVE SPEAKER: {subject}. Keep the face clearly visible for later lip-sync. Do not make the silent listener speak or move their mouth."
+            role_instruction = (
+                f"ACTIVE SPEAKER SHOT: {subject} is framed for later lip-sync. "
+                "Do NOT generate speech audio and do NOT intentionally animate the mouth as if speaking. "
+                "Keep lips in a natural resting position with only normal breathing and facial micro-expressions. "
+                "The real dialogue audio will be applied later by Wav2Lip. Keep the lower face unobstructed and sharply visible."
+            )
 
         if output.exists() and output.stat().st_size > 0:
             print(f"Reuse: {output}")
@@ -96,7 +101,7 @@ def main() -> None:
             "The environment reference is authoritative: remain inside that exact physical location.",
             "Do not relocate the scene, redesign architecture, change furniture, alter wardrobe, or invent characters.",
             "Camera movement is allowed only within the same physical environment.",
-            "Do not invent dialogue. Thai dialogue will be applied separately during lip-sync.",
+            "No generated dialogue, no generated narration, and no generated lip movement for speech. Real dialogue audio and lip-sync are applied separately downstream.",
         ])
         references = [r for r in [environment, character_ref, listener_ref] if r is not None]
         generate_one(client, args.model, prompt, output, args.aspect_ratio, references)
