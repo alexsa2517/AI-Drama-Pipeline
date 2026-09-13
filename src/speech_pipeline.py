@@ -15,7 +15,7 @@ def build_speech_spec(episode: dict, scene: dict) -> dict:
         "emotion": scene.get("emotion", "natural"),
         "delivery": scene.get("delivery", "natural conversational delivery"),
         "voice_direction": "Natural human speech, clear Thai pronunciation, realistic breathing and pauses.",
-        "lip_sync": "Match phonemes and mouth shapes precisely to the supplied dialogue; no mouth movement when silent.",
+        "lip_sync": "Accurate lip-sync: match phonemes and mouth shapes precisely to the supplied dialogue; no mouth movement when silent.",
         "animation_context": build_character_animation_context(episode, scene),
         "audio_requirements": [
             "clean dialogue",
@@ -31,8 +31,9 @@ def build_dialogue_video_prompt(episode: dict, scene: dict) -> str:
     spec = build_speech_spec(episode, scene)
     if not spec["dialogue"]:
         return ""
+    duration = float(scene.get("duration_seconds", 8))
     return (
-        f"Create a cinematic talking-character shot for {scene['duration_seconds']} seconds. "
+        f"Create a cinematic talking-character shot for {duration:g} seconds. "
         f"The speaker is {spec['speaker'] or 'the active character'}. "
         f"The character says exactly: \"{spec['dialogue']}\". "
         f"Emotion: {spec['emotion']}. Delivery: {spec['delivery']}. "
