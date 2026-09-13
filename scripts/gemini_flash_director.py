@@ -51,6 +51,13 @@ HARD RULES:
     return json.loads(text)
 
 
+def _shot_label(shot: object) -> str:
+    """Return a readable shot label for both legacy string and richer dict plans."""
+    if isinstance(shot, dict):
+        return str(shot.get("shot", shot.get("type", "unknown")))
+    return str(shot)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Use Gemini Flash as the automated AI Drama director.")
     parser.add_argument("shot_manifest")
@@ -69,7 +76,7 @@ def main() -> None:
     for item in manifest.get("shots", []):
         if args.scene and item.get("scene_id") != args.scene:
             continue
-        print(f"Gemini Flash directing shot {item['shot'].get('shot')}")
+        print(f"Gemini Flash directing shot {_shot_label(item.get('shot'))}")
         direction = call_director(client, episode, item)
         item["gemini_flash"] = direction
         if direction.get("video_prompt"):
