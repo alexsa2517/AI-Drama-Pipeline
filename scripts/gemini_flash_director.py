@@ -7,9 +7,10 @@ from pathlib import Path
 
 from google import genai
 from google.genai import types
+from google.genai import errors
 
 
-def call_director(client: genai.Client, episode: dict, shot: dict) -> dict:
+def call_director(client: genai.Client, episode: dict, shot: dict, model: str) -> dict:
     prompt = f"""
 You are the senior continuity director for an AI cinematic drama pipeline.
 Model role: planning/directing only. Do NOT invent locations, characters, dialogue, props or story facts.
@@ -40,7 +41,7 @@ HARD RULES:
 9. Output valid JSON only.
 """
     response = client.models.generate_content(
-        model=os.getenv("GEMINI_FLASH_MODEL", "gemini-3.8-flash"),
+        model=model,
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -58,6 +59,14 @@ def _shot_label(shot: object) -> str:
     return str(shot)
 
 
+def _model_candidates() -> list[str]:
+    primary = os.getenv("GEMINI_FLASH_MODEL", "gemini-3.8-flash")
+    configured = os.getenv("GEMINI_FLASH_FALLBACK_MODELS", "gemini-3.6-flash,gemini-2.5-flash")
+    candidates = [primary]
+    candidates.extend(x.strip() for x in configured.split(",") if x.strip())
+    return list(dict.fromkeys(candidates))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Use Gemini Flash as the automated AI Drama director.")
     parser.add_argument("shot_manifest")
@@ -72,12 +81,26 @@ def main() -> None:
     manifest = json.loads(Path(args.shot_manifest).read_text(encoding="utf-8"))
     episode = __import__("yaml").safe_load(Path(args.episode).read_text(encoding="utf-8"))
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    models = _model_candidates()
 
     for item in manifest.get("shots", []):
         if args.scene and item.get("scene_id") != args.scene:
             continue
         print(f"Gemini Flash directing shot {_shot_label(item.get('shot'))}")
-        direction = call_director(client, episode, item)
+        last_error = None
+        direction = None
+        for model in models:
+            try:
+                print(f"  using model: {model}")
+                direction = call_director(client, episode, item, model)
+                item["gemini_flash_model"] = model
+                break
+            except errors.ServerError as exc:
+                last_error = exc
+                print(f"  model unavailable (server error): {model}")
+                continue
+        if direction is None:
+            raise RuntimeError(f"All Gemini director models failed. Last error: {last_error}")
         item["gemini_flash"] = direction
         if direction.get("video_prompt"):
             item["video_prompt"] = direction["video_prompt"]
