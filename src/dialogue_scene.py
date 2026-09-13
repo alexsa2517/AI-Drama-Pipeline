@@ -33,15 +33,24 @@ def normalize_dialogue(scene: dict) -> list[dict[str, Any]]:
                     "speaker": speaker,
                     "dialogue": text,
                     "emotion": line.get("emotion", scene.get("emotion", "natural")),
+                    "delivery": line.get("delivery", scene.get("delivery", "natural conversational delivery")),
                     "pause_after": float(line.get("pause_after", 0.25)),
+                    "acting_notes": line.get("acting_notes", ""),
                 })
         return turns
 
     text = str(scene.get("dialogue", "")).strip()
     speaker = str(scene.get("speaker", "")).strip()
     if text and speaker:
-        return [{"turn": 1, "speaker": speaker, "dialogue": text,
-                 "emotion": scene.get("emotion", "natural"), "pause_after": 0.25}]
+        return [{
+            "turn": 1,
+            "speaker": speaker,
+            "dialogue": text,
+            "emotion": scene.get("emotion", "natural"),
+            "delivery": scene.get("delivery", "natural conversational delivery"),
+            "pause_after": 0.25,
+            "acting_notes": scene.get("acting_notes", ""),
+        }]
     return []
 
 
@@ -62,7 +71,8 @@ def build_conversation_prompt(scene: dict) -> str:
     for turn in turns:
         lines.append(
             f"TURN {turn['turn']} — {turn['speaker']}: \"{turn['dialogue']}\" "
-            f"Emotion: {turn['emotion']}. Pause after: {turn['pause_after']:.2f}s."
+            f"Emotion: {turn['emotion']}. Delivery: {turn['delivery']}. "
+            f"Pause after: {turn['pause_after']:.2f}s."
         )
     return "\n".join(lines)
 
