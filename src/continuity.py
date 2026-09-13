@@ -24,6 +24,7 @@ def build_scene_visual_lock(scene: dict) -> str:
         f"EXACT TIME/CONDITIONS: {time}",
         f"SCENE ACTION: {action}",
         "The exact location above is authoritative. Do NOT replace, reinterpret or relocate the scene to another setting.",
+        "The same physical environment must remain continuous across all shots in this scene.",
         "If the location is a company/office/building, it must remain that same company/office/building throughout the scene.",
         "Do not turn an office into a street, home, warehouse, cafe, outdoor area or generic room unless the scene explicitly says so.",
         "Camera angle changes are allowed, but camera changes must reveal different views of the SAME physical environment.",
