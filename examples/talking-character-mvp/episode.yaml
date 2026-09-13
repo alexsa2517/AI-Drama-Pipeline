@@ -11,9 +11,13 @@ characters:
     personality: "กล้าหาญ ระมัดระวัง ดื้อดึง และกำลังหวาดกลัวเรื่องแม่ที่หายตัวไป"
     continuity_notes: "ห้ามเปลี่ยนใบหน้า ทรงผม เสื้อโค้ต ผ้าพันคอ รองเท้า กระเป๋า หรือสัดส่วนร่างกายในทุกช็อต"
     voice:
-      provider: "gtts"
+      provider: "edge-tts"
+      voice: "th-TH-PremwadeeNeural"
       language: "th"
-      slow: false
+      gender: "female"
+      rate: "+0%"
+      pitch: "+0Hz"
+      volume: "+0%"
   - id: CHAR-002
     name: "Baba Yaga"
     role: "supernatural witch"
@@ -21,9 +25,13 @@ characters:
     personality: "ลึกลับ เยือกเย็น เจ้าเล่ห์ และเหมือนรู้ความจริงทุกอย่าง"
     continuity_notes: "ห้ามเปลี่ยนใบหน้า ผม เสื้อคลุม ผ้าคลุมไหล่ มือ หรือสัดส่วนร่างกายในทุกช็อต"
     voice:
-      provider: "gtts"
+      provider: "edge-tts"
+      voice: "th-TH-PremwadeeNeural"
       language: "th"
-      slow: false
+      gender: "female"
+      rate: "-12%"
+      pitch: "-28Hz"
+      volume: "+0%"
 scenes:
   - id: TALK-001
     title: "กระท่อมกลางป่า"
