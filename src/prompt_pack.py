@@ -53,10 +53,17 @@ def build_scene_pack(episode: dict) -> list[dict]:
         sound_cue_timeline = build_sound_cue_timeline(episode, scene, index)
         dialogue_video = build_dialogue_video_prompt(episode, scene)
         acting_director = build_acting_prompt(scene)
+        cinematic_timeline_prompt = "\n".join(
+            f"SHOT {shot['shot']}: {shot['start']:.2f}s–{shot['end']:.2f}s ({shot['duration']:.2f}s) | "
+            f"{shot.get('size', '')} | {shot.get('angle', '')} | {shot.get('lens', '')} | "
+            f"subject={shot.get('subject', '')} | purpose={shot.get('purpose', '')} | "
+            f"movement={shot.get('movement', '')} | cut={shot.get('cut_reason', '')}"
+            for shot in cinematic_shot_plan
+        )
         video_parts = [visual_lock]
         if story_direction:
             video_parts.append(story_direction)
-        video_parts.extend([ai_cinematic_director, feature_film, feature_film_motion, build_video_prompt(episode, scene)])
+        video_parts.extend([ai_cinematic_director, "CINEMATIC SHOT-BY-SHOT TIMELINE:\n" + cinematic_timeline_prompt, feature_film, feature_film_motion, build_video_prompt(episode, scene)])
         if dialogue_video:
             video_parts.append(dialogue_video)
         if conversation:
@@ -87,6 +94,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
             "story_blueprint": story_blueprint,
             "ai_cinematic_director": ai_cinematic_director,
             "cinematic_shot_plan": cinematic_shot_plan,
+            "cinematic_timeline": cinematic_shot_plan,
             "feature_film_cinema": feature_film,
             "feature_film_motion": feature_film_motion,
             "motion_continuity": motion_continuity,
