@@ -4,6 +4,7 @@ import yaml
 
 from .validator import validate_episode
 from .prompt_pack import build_scene_pack
+from .feature_film_story import build_legend_story_prompt
 from .quality import quality_report
 
 
@@ -27,6 +28,9 @@ def generate_episode(path: str, output_root: str = "output") -> Path:
         f"**Genre:** {data.get('genre', 'dark fantasy')}\n",
         encoding="utf-8",
     )
+
+    if str(data.get("content_type", "")).lower() == "legend" or str(data.get("genre", "")).lower() in {"legend", "folklore", "myth", "mythology", "dark folklore thriller"}:
+        (out / "story_blueprint.md").write_text(build_legend_story_prompt(data) + "\n", encoding="utf-8")
 
     scene_packs = build_scene_pack(data)
     for pack in scene_packs:
