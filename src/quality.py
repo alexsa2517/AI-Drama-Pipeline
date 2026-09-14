@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .feature_film_motion import motion_quality_issues
 from .ai_sound_director import build_sound_cue_timeline
+from .ai_cinematic_director import build_cinematic_shot_plan
 
 
 def score_hook(text: str) -> int:
@@ -65,13 +66,30 @@ def sound_structure_report(episode: dict) -> dict:
     return {"score": score, "issues": issues, "cue_count": cue_count}
 
 
+def cinematic_structure_report(episode: dict) -> dict:
+    scenes = episode.get("scenes", [])
+    if not scenes: return {"score": 0, "issues": ["No scenes available for cinematic directing analysis"]}
+    issues = []
+    shot_count = 0
+    for scene in scenes:
+        plan = build_cinematic_shot_plan(episode, scene)
+        shot_count += len(plan)
+        if not scene.get("location"): issues.append(f"{scene.get('id')}: missing location for spatial cinematography")
+        if not scene.get("action") and not scene.get("dialogue_lines") and not scene.get("dialogue"): issues.append(f"{scene.get('id')}: no action/dialogue basis for shot motivation")
+        if len(plan) > 1 and all(str(s.get("cut_reason", "")).lower() in {"", "coverage", "default"} for s in plan[1:]):
+            issues.append(f"{scene.get('id')}: camera changes lack explicit editorial motivation")
+    score = max(0, 100 - len(issues) * 20)
+    return {"score": score, "issues": issues, "shot_count": shot_count}
+
+
 def quality_report(episode: dict) -> dict:
     hook = score_hook(episode.get("logline", ""))
     structure = story_structure_report(episode)
     continuity = continuity_issues(episode)
     motion = motion_structure_report(episode)
     sound = sound_structure_report(episode)
-    issues = continuity + structure["issues"] + motion["issues"] + sound["issues"]
+    cinematic = cinematic_structure_report(episode)
+    issues = continuity + structure["issues"] + motion["issues"] + sound["issues"] + cinematic["issues"]
     return {
         "hook_score": hook,
         "story_structure_score": structure["score"],
@@ -83,7 +101,10 @@ def quality_report(episode: dict) -> dict:
         "sound_score": sound["score"],
         "sound_issues": sound["issues"],
         "sound_cue_count": sound["cue_count"],
+        "cinematic_score": cinematic["score"],
+        "cinematic_issues": cinematic["issues"],
+        "cinematic_shot_count": cinematic["shot_count"],
         "continuity_score": max(0, 100 - len(continuity) * 20),
         "issues": issues,
-        "ready": hook >= 60 and structure["score"] >= 50 and motion["score"] >= 50 and sound["score"] >= 50 and not continuity and not motion["hard_failures"],
+        "ready": hook >= 60 and structure["score"] >= 50 and motion["score"] >= 50 and sound["score"] >= 50 and cinematic["score"] >= 50 and not continuity and not motion["hard_failures"],
     }
