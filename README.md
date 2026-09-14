@@ -6,7 +6,21 @@ AI-assisted production pipeline for short-form dramatic stories. The pipeline co
 
 ## Pipeline
 
-`Concept → Episode → Character Bible → Scene Visual Lock → Image → Base Video → Character Voice → Lip-Sync → QA`
+`Concept → Legend Research → Hook → Beginning → Middle → Climax/Ending → Character Bible → Scene Visual Lock → Feature-Film Cinema → Feature-Film Sound → Image → Video → Character Voice → Lip-Sync → QA`
+
+## Feature-Film Legend Story Structure
+
+For legends, folklore and mythology, the pipeline now applies a dedicated story engine before scene production:
+
+- **Hook — first 1–3 seconds:** immediate mystery, danger, contradiction, impossible image or emotional question.
+- **Beginning:** establish protagonist, world, desire/problem and inciting incident.
+- **Middle:** escalate conflict, reveal clues, deepen relationships, force choices and close escape routes.
+- **Ending:** climax, reveal, consequence, emotional reaction and payoff.
+- **Causality:** each scene must create a meaningful reason for the next scene to exist.
+- **Foreshadowing / payoff:** visual, dialogue and story seeds can be planted early and paid off later.
+- **Legend integrity:** separate historical fact, traditional legend, interpretation and fictionalized dramatization.
+
+Legend episodes receive a `story_blueprint.md` plus per-scene story direction. Existing scene YAML remains compatible; optional fields such as `story_purpose`, `conflict`, `emotional_beat`, `reveal`, `story_question`, `foreshadowing` and `payoff` can make the story direction more explicit.
 
 ## Quick Start
 
@@ -41,6 +55,7 @@ The image/video prompt pack also contains a **HARD SCENE VISUAL LOCK**. Camera a
 ```text
 output/episode-001/
 ├── story.md
+├── story_blueprint.md       # legends / folklore / mythology
 ├── production.json
 └── scenes/
     ├── SC001-image.md
@@ -71,7 +86,9 @@ outputs/voice/
 ## Design Principles
 
 - **Character continuity first** — identity and wardrobe notes are preserved across scenes.
+- **Story continuity first** — every scene has a dramatic purpose and causal connection.
 - **Scene-first production** — every scene has independent image, video and voice outputs.
+- **Feature-film direction** — cinematography, acting, sound and story structure are generated as coordinated layers.
 - **Provider-agnostic** — voice/video providers can be swapped without changing episode data.
 - **Human review** — generated assets are reviewed before publishing.
 - **Reusable data** — episode YAML is the single source of truth.
@@ -80,8 +97,13 @@ outputs/voice/
 
 - Episode data model
 - Validation
-- Prompt generation
+- Legend fact-first research guardrails
+- Feature-film story structure
+- Hook / beginning / middle / ending direction
+- Story causality and payoff guidance
 - Hard scene visual lock
+- Feature-film cinematography direction
+- Feature-film sound design
 - Character animation/lip-sync rules
 - Dialogue timing
 - Adaptive music direction
