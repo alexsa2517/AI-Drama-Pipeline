@@ -12,6 +12,7 @@ from .feature_film_audio import build_feature_film_audio_prompt
 from .ai_sound_director import build_ai_sound_director, build_sound_cue_timeline
 from .feature_film_story import build_legend_story_prompt, build_scene_story_prompt
 from .feature_film_motion import build_feature_film_motion_prompt, build_motion_continuity_prompt
+from .hook_pacing_director import build_hook_pacing_director_prompt, build_hook_3_stage_plan, pacing_structure_report
 from .legend_fact_engine import build_fact_first_policy, build_story_guardrail_prompt
 from .dialogue_scene import build_camera_plan, build_conversation_prompt
 from .speech_pipeline import build_dialogue_video_prompt
@@ -34,6 +35,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
     packs = []
     for index, scene in enumerate(episode.get("scenes", [])):
         story_direction = build_scene_story_prompt(episode, scene, index) if is_legend else ""
+        hook_pacing = build_hook_pacing_director_prompt(episode, scene, index)
         visual_lock = build_scene_visual_lock(scene)
         conversation = build_conversation_prompt(scene)
         camera_plan = build_camera_plan(scene)
@@ -62,7 +64,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
             f"movement={shot.get('movement', '')} | cut={shot.get('cut_reason', '')}"
             for shot in cinematic_shot_plan
         )
-        video_parts = [visual_lock]
+        video_parts = [visual_lock, hook_pacing]
         if story_direction:
             video_parts.append(story_direction)
         video_parts.extend([director_memory, director_decision, ai_cinematic_director, "CINEMATIC SHOT-BY-SHOT TIMELINE:\n" + cinematic_timeline_prompt, feature_film, feature_film_motion, build_video_prompt(episode, scene)])
@@ -92,6 +94,9 @@ def build_scene_pack(episode: dict) -> list[dict]:
         packs.append({
             "scene_id": scene["id"],
             "visual_lock": visual_lock,
+            "hook_pacing_director": hook_pacing,
+            "hook_3_stage_plan": build_hook_3_stage_plan(episode),
+            "pacing_report": pacing_structure_report(episode),
             "story_direction": story_direction,
             "story_blueprint": story_blueprint,
             "director_memory": director_memory,
@@ -105,7 +110,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
             "feature_film_audio": feature_film_audio,
             "ai_sound_director": ai_sound_director,
             "sound_cue_timeline": sound_cue_timeline,
-            "image": visual_lock + "\n\n" + (story_direction + "\n\n" if story_direction else "") + director_memory + "\n\n" + ai_cinematic_director + "\n\n" + feature_film + "\n\n" + feature_film_motion + "\n\n" + build_image_prompt(episode, scene) + "\n\n" + character_context + "\n\n" + cinematography,
+            "image": visual_lock + "\n\n" + hook_pacing + "\n\n" + (story_direction + "\n\n" if story_direction else "") + director_memory + "\n\n" + ai_cinematic_director + "\n\n" + feature_film + "\n\n" + feature_film_motion + "\n\n" + build_image_prompt(episode, scene) + "\n\n" + character_context + "\n\n" + cinematography,
             "video": "\n\n".join(video_parts),
             "voice": build_voice_prompt(episode, scene),
             "dialogue": conversation,
