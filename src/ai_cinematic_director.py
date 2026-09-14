@@ -7,6 +7,7 @@ from .feature_film_cinema import build_feature_film_cinema_prompt
 from .feature_film_motion import build_feature_film_motion_prompt
 from .ai_acting_director import build_acting_prompt
 from .ai_sound_director import build_ai_sound_director
+from .timeline import build_dialogue_timeline
 
 
 AI_CINEMATIC_DIRECTOR_MASTER = """AI CINEMATIC DIRECTOR — UNIFIED FILM LANGUAGE
@@ -75,6 +76,20 @@ def _tension(scene: dict[str, Any]) -> float:
         return 0.4
 
 
+def _estimate_scene_duration(scene: dict[str, Any]) -> float:
+    explicit = scene.get("duration") or scene.get("duration_seconds") or scene.get("length_seconds")
+    try:
+        if explicit is not None:
+            return max(1.0, float(explicit))
+    except (TypeError, ValueError):
+        pass
+    dialogue = build_dialogue_timeline(scene)
+    if dialogue:
+        return round(max(x["end"] + float(x.get("pause_after", 0.25)) for x in dialogue), 2)
+    text = _text(scene, "action", "narration", "description")
+    return round(max(3.0, min(12.0, 3.5 + len(text) / 80.0)), 2)
+
+
 def _shot_strategy(scene: dict[str, Any]) -> str:
     text = _text(scene, "story_purpose", "conflict", "reveal", "action", "payoff").lower()
     tension = _tension(scene)
@@ -87,20 +102,32 @@ def _shot_strategy(scene: dict[str, Any]) -> str:
     return "Use a stable master/two-shot or establishing frame, then medium/close coverage only when performance or story information requires it."
 
 
+def _cut_trigger(scene: dict[str, Any]) -> str:
+    text = _text(scene, "reveal", "story_purpose", "conflict", "emotional_beat").lower()
+    if any(x in text for x in ("reveal", "discovery", "เฉลย", "เปิดเผย", "ค้นพบ")):
+        return "cut at the reveal landing or the first meaningful reaction after it"
+    if any(x in text for x in ("conflict", "threat", "danger", "ภัย", "อันตราย")):
+        return "cut when attention shifts, threat enters the frame, or a reaction changes the stakes"
+    return "cut on a completed thought, meaningful action, reaction, or change of attention"
+
+
 def build_ai_cinematic_director_prompt(episode: dict, scene: dict, scene_index: int = 0) -> str:
     story = _text(scene, "story_purpose", "story_question", "conflict", "reveal", "payoff")
     action = _text(scene, "action", "movement")
     location = scene.get("location", episode.get("location", "unspecified"))
+    duration = _estimate_scene_duration(scene)
     return "\n\n".join([
         AI_CINEMATIC_DIRECTOR_MASTER,
         "SCENE DIRECTING DECISION",
         f"Scene: {scene.get('id', scene_index + 1)}",
         f"Location: {location}",
+        f"Estimated scene duration: {duration:.2f}s",
         f"Story purpose: {story or 'not explicitly specified — infer from the scene without inventing facts'}",
         f"Emotion: {_emotion(scene)}",
         f"Action / blocking: {action or 'derive from visible action only'}",
         f"Tension: {_tension(scene):.2f}",
         f"Coverage strategy: {_shot_strategy(scene)}",
+        f"Primary cut trigger: {_cut_trigger(scene)}",
         "",
         build_cinematography_bible(scene),
         build_lighting_bible(scene),
@@ -110,23 +137,114 @@ def build_ai_cinematic_director_prompt(episode: dict, scene: dict, scene_index: 
         build_acting_prompt(scene),
         build_ai_sound_director(episode, scene, scene_index),
         "",
-        "OUTPUT — CINEMATIC SHOT PLAN",
-        "For each shot, return: shot number, purpose, subject, shot size, camera angle, lens family, camera position, movement, duration, eyeline, lighting emphasis, color emphasis, sound emphasis, cut reason, and continuity constraint.",
-        "The plan must explain WHY the camera changes. If no change is needed, hold the shot.",
+        "SHOT-BY-SHOT TIMELINE CONTRACT",
+        "Create a real chronological shot timeline whose intervals exactly cover the scene duration without gaps or overlaps.",
+        "For every shot return: shot number, start time, end time, duration, purpose, subject, shot size, camera angle, lens family, camera position, movement, eyeline, axis/screen direction, lighting emphasis, color emphasis, sound emphasis, cut trigger and continuity lock.",
+        "Timing must be driven by dialogue beats, action beats, reaction beats, reveal beats and silence—not by arbitrary equal clip lengths.",
+        "Do not force a cut. A shot may hold through multiple dialogue lines when performance and geography benefit from staying present.",
+        "When actual TTS duration becomes available, rescale or re-time shot boundaries while preserving the editorial beat order.",
+        "For 3D scenes, preserve the established 3D visual language; never convert the scene to live action unless explicitly requested.",
     ])
 
 
+def build_cinematic_shot_timeline(episode: dict, scene: dict, scene_index: int = 0) -> list[dict[str, Any]]:
+    """Build a deterministic timing baseline that can be refined by an AI/provider.
+
+    The baseline uses authoritative dialogue timing when available and allocates visual coverage
+    around real dialogue/reaction beats rather than generating arbitrary equal-length shots.
+    """
+    total = _estimate_scene_duration(scene)
+    dialogue = build_dialogue_timeline(scene)
+    timeline: list[dict[str, Any]] = []
+
+    if not dialogue:
+        hold = round(total, 2)
+        return [{
+            "shot": 1,
+            "start": 0.0,
+            "end": hold,
+            "duration": hold,
+            "size": "wide/medium master",
+            "angle": "eye level",
+            "lens": "wide-normal",
+            "subject": "scene",
+            "purpose": "establish geography and follow the meaningful action without unnecessary cutting",
+            "movement": "motivated slow push or locked-off hold",
+            "cut_reason": "end of scene or meaningful change of attention",
+        }]
+
+    # Establishing geography before dialogue. Keep it brief but never remove it when geography matters.
+    first_start = max(0.0, min(dialogue[0]["start"], 2.5))
+    if first_start > 0.15:
+        timeline.append({
+            "shot": 1,
+            "start": 0.0,
+            "end": round(first_start, 2),
+            "duration": round(first_start, 2),
+            "size": "wide establishing",
+            "angle": "eye level",
+            "lens": "wide",
+            "subject": "scene geography",
+            "purpose": "orient the audience before the first spoken beat",
+            "movement": "locked-off or restrained establishing movement",
+            "cut_reason": "first dialogue/action beat begins",
+        })
+
+    shot_no = len(timeline) + 1
+    speakers = []
+    for turn in dialogue:
+        if turn["speaker"] not in speakers:
+            speakers.append(turn["speaker"])
+
+    for i, turn in enumerate(dialogue):
+        start = float(turn["start"])
+        end = float(turn["end"])
+        speaker = turn["speaker"]
+        timeline.append({
+            "shot": shot_no,
+            "start": round(start, 2),
+            "end": round(end, 2),
+            "duration": round(max(0.0, end - start), 2),
+            "size": "medium close-up" if len(dialogue) <= 4 else "over-the-shoulder / medium",
+            "angle": "eye level",
+            "lens": "normal",
+            "subject": speaker,
+            "purpose": f"deliver turn {turn['turn']} while showing the speaker's intention and performance",
+            "movement": "subtle motivated hold or slow push only if emotion escalates",
+            "eyeline": "toward listener / correct target",
+            "cut_reason": "completed thought or next meaningful reaction",
+        })
+        shot_no += 1
+
+        pause = float(turn.get("pause_after", 0.25))
+        next_start = float(dialogue[i + 1]["start"]) if i + 1 < len(dialogue) else total
+        reaction_end = min(next_start, end + pause)
+        if reaction_end - end >= 0.12:
+            listener = next((x for x in speakers if x != speaker), "listener")
+            timeline.append({
+                "shot": shot_no,
+                "start": round(end, 2),
+                "end": round(reaction_end, 2),
+                "duration": round(reaction_end - end, 2),
+                "size": "reaction close-up" if len(dialogue) <= 4 else "reaction medium close-up",
+                "angle": "reverse angle / OTS",
+                "lens": "normal-long",
+                "subject": listener,
+                "purpose": "allow the listener to process the line and reveal emotional consequence",
+                "movement": "hold; micro-expression and breathing carry the beat",
+                "eyeline": "toward active speaker",
+                "cut_reason": "listener response completes or next speaker begins",
+            })
+            shot_no += 1
+
+    # Ensure the final interval reaches the exact scene end without overlap.
+    if timeline:
+        timeline[-1]["end"] = round(total, 2)
+        timeline[-1]["duration"] = round(max(0.0, total - float(timeline[-1]["start"])), 2)
+
+    return timeline
+
+
+# Backward-compatible alias used by existing QA/prompt code.
 def build_cinematic_shot_plan(episode: dict, scene: dict, scene_index: int = 0) -> list[dict[str, Any]]:
-    """Deterministic baseline coverage; AI/provider can refine it without replacing existing shot logic."""
-    dialogue = scene.get("dialogue_lines", []) or scene.get("dialogue", [])
-    shots: list[dict[str, Any]] = [
-        {"shot": 1, "size": "wide/medium master", "angle": "eye level", "lens": "wide-normal", "purpose": "establish geography and blocking", "cut_reason": "scene entry"}
-    ]
-    if dialogue:
-        for index, line in enumerate(dialogue, start=2):
-            speaker = line.get("speaker", "active character") if isinstance(line, dict) else "active character"
-            shots.append({"shot": index, "size": "medium close-up", "angle": "eye level", "lens": "normal", "subject": speaker, "purpose": "capture performance and dialogue", "cut_reason": "speaker thought/line beat"})
-            shots.append({"shot": index + len(dialogue), "size": "reaction close-up", "angle": "eye level", "lens": "normal-long", "subject": "listener", "purpose": "capture processing and emotional reaction", "cut_reason": "reaction changes meaning"})
-    else:
-        shots.append({"shot": 2, "size": "medium", "angle": "eye level", "lens": "normal", "purpose": "follow meaningful action", "cut_reason": "attention changes"})
-    return shots
+    return build_cinematic_shot_timeline(episode, scene, scene_index)
