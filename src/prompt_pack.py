@@ -9,6 +9,7 @@ from .cinematography_director import build_cinematography_prompt
 from .feature_film_cinema import build_feature_film_cinema_prompt
 from .feature_film_audio import build_feature_film_audio_prompt
 from .feature_film_story import build_legend_story_prompt, build_scene_story_prompt
+from .feature_film_motion import build_feature_film_motion_prompt, build_motion_continuity_prompt
 from .legend_fact_engine import build_fact_first_policy, build_story_guardrail_prompt
 from .dialogue_scene import build_camera_plan, build_conversation_prompt
 from .speech_pipeline import build_dialogue_video_prompt
@@ -38,6 +39,8 @@ def build_scene_pack(episode: dict) -> list[dict]:
         professional_director = build_professional_director_prompt(scene)
         cinematography = build_cinematography_prompt(scene)
         feature_film = build_feature_film_cinema_prompt(episode, scene)
+        feature_film_motion = build_feature_film_motion_prompt(episode, scene)
+        motion_continuity = build_motion_continuity_prompt(episode, index)
         timeline = build_dialogue_timeline(scene)
         timeline_prompt = build_timeline_prompt(scene)
         audio_direction = build_audio_direction(scene)
@@ -47,7 +50,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
         video_parts = [visual_lock]
         if story_direction:
             video_parts.append(story_direction)
-        video_parts.extend([feature_film, build_video_prompt(episode, scene)])
+        video_parts.extend([feature_film, feature_film_motion, build_video_prompt(episode, scene)])
         if dialogue_video:
             video_parts.append(dialogue_video)
         if conversation:
@@ -63,6 +66,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
         video_parts.append(feature_film_audio)
         video_parts.append(acting_director)
         video_parts.append(build_character_animation_context(episode, scene))
+        video_parts.append(motion_continuity)
         if is_legend:
             video_parts.append(story_blueprint)
             video_parts.append(fact_policy)
@@ -75,8 +79,10 @@ def build_scene_pack(episode: dict) -> list[dict]:
             "story_direction": story_direction,
             "story_blueprint": story_blueprint,
             "feature_film_cinema": feature_film,
+            "feature_film_motion": feature_film_motion,
+            "motion_continuity": motion_continuity,
             "feature_film_audio": feature_film_audio,
-            "image": visual_lock + "\n\n" + (story_direction + "\n\n" if story_direction else "") + feature_film + "\n\n" + build_image_prompt(episode, scene) + "\n\n" + character_context + "\n\n" + cinematography,
+            "image": visual_lock + "\n\n" + (story_direction + "\n\n" if story_direction else "") + feature_film + "\n\n" + feature_film_motion + "\n\n" + build_image_prompt(episode, scene) + "\n\n" + character_context + "\n\n" + cinematography,
             "video": "\n\n".join(video_parts),
             "voice": build_voice_prompt(episode, scene),
             "dialogue": conversation,
