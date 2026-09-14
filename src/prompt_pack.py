@@ -8,6 +8,7 @@ from .professional_director import build_professional_director_prompt
 from .cinematography_director import build_cinematography_prompt
 from .feature_film_cinema import build_feature_film_cinema_prompt
 from .feature_film_audio import build_feature_film_audio_prompt
+from .ai_sound_director import build_ai_sound_director, build_sound_cue_timeline
 from .feature_film_story import build_legend_story_prompt, build_scene_story_prompt
 from .feature_film_motion import build_feature_film_motion_prompt, build_motion_continuity_prompt
 from .legend_fact_engine import build_fact_first_policy, build_story_guardrail_prompt
@@ -45,6 +46,8 @@ def build_scene_pack(episode: dict) -> list[dict]:
         timeline_prompt = build_timeline_prompt(scene)
         audio_direction = build_audio_direction(scene)
         feature_film_audio = build_feature_film_audio_prompt(episode, scene)
+        ai_sound_director = build_ai_sound_director(episode, scene, index)
+        sound_cue_timeline = build_sound_cue_timeline(episode, scene, index)
         dialogue_video = build_dialogue_video_prompt(episode, scene)
         acting_director = build_acting_prompt(scene)
         video_parts = [visual_lock]
@@ -64,6 +67,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
             video_parts.append(cinematography)
         video_parts.append(audio_direction)
         video_parts.append(feature_film_audio)
+        video_parts.append(ai_sound_director)
         video_parts.append(acting_director)
         video_parts.append(build_character_animation_context(episode, scene))
         video_parts.append(motion_continuity)
@@ -82,6 +86,8 @@ def build_scene_pack(episode: dict) -> list[dict]:
             "feature_film_motion": feature_film_motion,
             "motion_continuity": motion_continuity,
             "feature_film_audio": feature_film_audio,
+            "ai_sound_director": ai_sound_director,
+            "sound_cue_timeline": sound_cue_timeline,
             "image": visual_lock + "\n\n" + (story_direction + "\n\n" if story_direction else "") + feature_film + "\n\n" + feature_film_motion + "\n\n" + build_image_prompt(episode, scene) + "\n\n" + character_context + "\n\n" + cinematography,
             "video": "\n\n".join(video_parts),
             "voice": build_voice_prompt(episode, scene),
