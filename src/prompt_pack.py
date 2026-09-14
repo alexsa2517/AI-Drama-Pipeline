@@ -7,6 +7,7 @@ from .ai_acting_director import build_acting_prompt
 from .professional_director import build_professional_director_prompt
 from .cinematography_director import build_cinematography_prompt
 from .feature_film_cinema import build_feature_film_cinema_prompt
+from .feature_film_audio import build_feature_film_audio_prompt
 from .legend_fact_engine import build_fact_first_policy, build_story_guardrail_prompt
 from .dialogue_scene import build_camera_plan, build_conversation_prompt
 from .speech_pipeline import build_dialogue_video_prompt
@@ -37,6 +38,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
         timeline = build_dialogue_timeline(scene)
         timeline_prompt = build_timeline_prompt(scene)
         audio_direction = build_audio_direction(scene)
+        feature_film_audio = build_feature_film_audio_prompt(episode, scene)
         dialogue_video = build_dialogue_video_prompt(episode, scene)
         acting_director = build_acting_prompt(scene)
         video_parts = [visual_lock, feature_film, build_video_prompt(episode, scene)]
@@ -52,6 +54,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
         else:
             video_parts.append(cinematography)
         video_parts.append(audio_direction)
+        video_parts.append(feature_film_audio)
         video_parts.append(acting_director)
         video_parts.append(build_character_animation_context(episode, scene))
         if is_legend:
@@ -63,6 +66,7 @@ def build_scene_pack(episode: dict) -> list[dict]:
             "scene_id": scene["id"],
             "visual_lock": visual_lock,
             "feature_film_cinema": feature_film,
+            "feature_film_audio": feature_film_audio,
             "image": visual_lock + "\n\n" + feature_film + "\n\n" + build_image_prompt(episode, scene) + "\n\n" + character_context + "\n\n" + cinematography,
             "video": "\n\n".join(video_parts),
             "voice": build_voice_prompt(episode, scene),
