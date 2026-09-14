@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .feature_film_motion import motion_quality_issues
+
 
 def score_hook(text: str) -> int:
     """Simple deterministic hook score (0-100) for V1.1."""
@@ -66,17 +68,40 @@ def continuity_issues(episode: dict) -> list[str]:
     return issues
 
 
+def motion_structure_report(episode: dict) -> dict:
+    """Check whether scenes provide enough information for believable natural motion."""
+    scenes = episode.get("scenes", [])
+    if not scenes:
+        return {"score": 0, "issues": ["No scenes available for motion analysis"]}
+
+    warnings = motion_quality_issues(episode)
+    hard_failures = [issue for issue in warnings if "missing action" in issue.lower()]
+    missing_intent = [issue for issue in warnings if "no explicit movement intent" in issue.lower()]
+    score = max(0, 100 - len(hard_failures) * 25 - len(missing_intent) * 10)
+    return {
+        "score": score,
+        "issues": warnings,
+        "hard_failures": hard_failures,
+        "warnings": missing_intent,
+    }
+
+
 def quality_report(episode: dict) -> dict:
     logline = episode.get("logline", "")
     hook = score_hook(logline)
     structure = story_structure_report(episode)
     continuity = continuity_issues(episode)
-    issues = continuity + structure["issues"]
+    motion = motion_structure_report(episode)
+    issues = continuity + structure["issues"] + motion["issues"]
     return {
         "hook_score": hook,
         "story_structure_score": structure["score"],
         "story_structure_issues": structure["issues"],
+        "motion_score": motion["score"],
+        "motion_issues": motion["issues"],
+        "motion_hard_failures": motion["hard_failures"],
+        "motion_warnings": motion["warnings"],
         "continuity_score": max(0, 100 - len(continuity) * 20),
         "issues": issues,
-        "ready": hook >= 60 and structure["score"] >= 50 and not continuity,
+        "ready": hook >= 60 and structure["score"] >= 50 and motion["score"] >= 50 and not continuity and not motion["hard_failures"],
     }
