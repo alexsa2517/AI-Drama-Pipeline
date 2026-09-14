@@ -18,6 +18,39 @@ def score_hook(text: str) -> int:
     return min(score, 100)
 
 
+def story_structure_report(episode: dict) -> dict:
+    """Deterministic structural checks for hook, beginning, middle and ending."""
+    scenes = episode.get("scenes", [])
+    if not scenes:
+        return {"score": 0, "issues": ["No scenes available for story structure analysis"]}
+
+    issues = []
+    first = scenes[0]
+    last = scenes[-1]
+    first_text = " ".join(str(first.get(k, "")) for k in ("title", "action", "narration", "story_purpose", "story_question", "reveal")).lower()
+    last_text = " ".join(str(last.get(k, "")) for k in ("title", "action", "narration", "story_purpose", "reveal", "payoff")).lower()
+
+    hook_markers = ["?", "!", "...", "…", "mystery", "danger", "secret", "shadow", "voice", "อันตราย", "ความลับ", "เสียง", "เงา", "ทำไม"]
+    if not any(marker in first_text for marker in hook_markers):
+        issues.append("Opening scene has no clear hook marker or mystery/danger signal")
+
+    if len(scenes) >= 3:
+        middle = scenes[len(scenes) // 2]
+        middle_text = " ".join(str(middle.get(k, "")) for k in ("action", "story_purpose", "conflict", "reveal", "emotional_beat")).lower()
+        escalation_markers = ["conflict", "danger", "reveal", "choice", "threat", "turn", "escalat", "ความขัดแย้ง", "อันตราย", "เปิดเผย", "ทางเลือก", "ภัย"]
+        if not any(marker in middle_text for marker in escalation_markers):
+            issues.append("Middle section has no explicit escalation/reveal/choice signal")
+    else:
+        issues.append("Story has fewer than 3 scenes; beginning/middle/ending cannot be strongly separated")
+
+    ending_markers = ["payoff", "climax", "reveal", "resolve", "resolution", "ending", "final", "เฉลย", "จุดไคลแมกซ์", "บทสรุป", "ตอนจบ"]
+    if not any(marker in last_text for marker in ending_markers):
+        issues.append("Final scene has no explicit climax/reveal/payoff signal")
+
+    score = max(0, 100 - len(issues) * 25)
+    return {"score": score, "issues": issues}
+
+
 def continuity_issues(episode: dict) -> list[str]:
     issues = []
     chars = {c.get("id"): c for c in episode.get("characters", [])}
@@ -36,10 +69,14 @@ def continuity_issues(episode: dict) -> list[str]:
 def quality_report(episode: dict) -> dict:
     logline = episode.get("logline", "")
     hook = score_hook(logline)
-    issues = continuity_issues(episode)
+    structure = story_structure_report(episode)
+    continuity = continuity_issues(episode)
+    issues = continuity + structure["issues"]
     return {
         "hook_score": hook,
-        "continuity_score": max(0, 100 - len(issues) * 20),
+        "story_structure_score": structure["score"],
+        "story_structure_issues": structure["issues"],
+        "continuity_score": max(0, 100 - len(continuity) * 20),
         "issues": issues,
-        "ready": hook >= 60 and not issues,
+        "ready": hook >= 60 and structure["score"] >= 50 and not continuity,
     }
