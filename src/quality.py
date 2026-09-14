@@ -3,6 +3,7 @@ from __future__ import annotations
 from .feature_film_motion import motion_quality_issues
 from .ai_sound_director import build_sound_cue_timeline
 from .ai_cinematic_director import build_cinematic_shot_plan
+from .hook_pacing_director import build_hook_3_stage_plan, pacing_structure_report
 
 
 def score_hook(text: str) -> int:
@@ -32,6 +33,14 @@ def story_structure_report(episode: dict) -> dict:
     else: issues.append("Story has fewer than 3 scenes; beginning/middle/ending cannot be strongly separated")
     if not any(x in last_text for x in ["payoff", "climax", "reveal", "resolve", "resolution", "ending", "final", "เฉลย", "จุดไคลแมกซ์", "บทสรุป", "ตอนจบ"]): issues.append("Final scene has no explicit climax/reveal/payoff signal")
     return {"score": max(0, 100 - len(issues) * 25), "issues": issues}
+
+
+def hook_pacing_report(episode: dict) -> dict:
+    hook = build_hook_3_stage_plan(episode)
+    pacing = pacing_structure_report(episode)
+    issues = list(hook["issues"]) + list(pacing["issues"])
+    score = min(hook["score"], pacing["score"])
+    return {"score": score, "issues": issues, "hook_3_stage": hook["stages"], "scene_decisions": pacing["scene_decisions"]}
 
 
 def continuity_issues(episode: dict) -> list[str]:
@@ -114,13 +123,19 @@ def cinematic_structure_report(episode: dict) -> dict:
 def quality_report(episode: dict) -> dict:
     hook = score_hook(episode.get("logline", ""))
     structure = story_structure_report(episode)
+    hook_pacing = hook_pacing_report(episode)
     continuity = continuity_issues(episode)
     motion = motion_structure_report(episode)
     sound = sound_structure_report(episode)
     cinematic = cinematic_structure_report(episode)
-    issues = continuity + structure["issues"] + motion["issues"] + sound["issues"] + cinematic["issues"]
+    issues = continuity + structure["issues"] + hook_pacing["issues"] + motion["issues"] + sound["issues"] + cinematic["issues"]
     return {
         "hook_score": hook,
+        "hook_3_stage_score": hook_pacing["score"],
+        "hook_3_stage": hook_pacing["hook_3_stage"],
+        "pacing_score": hook_pacing["score"],
+        "pacing_scene_decisions": hook_pacing["scene_decisions"],
+        "hook_pacing_issues": hook_pacing["issues"],
         "story_structure_score": structure["score"],
         "story_structure_issues": structure["issues"],
         "motion_score": motion["score"],
@@ -135,5 +150,5 @@ def quality_report(episode: dict) -> dict:
         "cinematic_shot_count": cinematic["shot_count"],
         "continuity_score": max(0, 100 - len(continuity) * 20),
         "issues": issues,
-        "ready": hook >= 60 and structure["score"] >= 50 and motion["score"] >= 50 and sound["score"] >= 50 and cinematic["score"] >= 50 and not continuity and not motion["hard_failures"],
+        "ready": hook >= 60 and hook_pacing["score"] >= 60 and structure["score"] >= 50 and motion["score"] >= 50 and sound["score"] >= 50 and cinematic["score"] >= 50 and not continuity and not motion["hard_failures"],
     }
