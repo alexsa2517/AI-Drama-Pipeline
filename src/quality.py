@@ -66,6 +66,35 @@ def sound_structure_report(episode: dict) -> dict:
     return {"score": score, "issues": issues, "cue_count": cue_count}
 
 
+def _timeline_issues(plan: list[dict], expected_end: float) -> list[str]:
+    issues = []
+    if not plan:
+        return ["No cinematic shot timeline generated"]
+    if abs(float(plan[0].get("start", 0.0))) > 0.01:
+        issues.append("Cinematic timeline does not start at 0.00s")
+    previous_end = 0.0
+    for shot in plan:
+        start = float(shot.get("start", -1))
+        end = float(shot.get("end", -1))
+        duration = float(shot.get("duration", -1))
+        if start < -0.001 or end <= start:
+            issues.append(f"SHOT {shot.get('shot')}: invalid start/end")
+            continue
+        if abs((end - start) - duration) > 0.03:
+            issues.append(f"SHOT {shot.get('shot')}: duration does not match start/end")
+        if start < previous_end - 0.03:
+            issues.append(f"SHOT {shot.get('shot')}: overlaps previous shot")
+        elif start > previous_end + 0.03:
+            issues.append(f"SHOT {shot.get('shot')}: gap before shot")
+        previous_end = end
+        for required in ("purpose", "cut_reason"):
+            if not shot.get(required):
+                issues.append(f"SHOT {shot.get('shot')}: missing {required}")
+    if abs(previous_end - expected_end) > 0.05:
+        issues.append(f"Cinematic timeline ends at {previous_end:.2f}s but expected {expected_end:.2f}s")
+    return issues
+
+
 def cinematic_structure_report(episode: dict) -> dict:
     scenes = episode.get("scenes", [])
     if not scenes: return {"score": 0, "issues": ["No scenes available for cinematic directing analysis"]}
@@ -74,11 +103,11 @@ def cinematic_structure_report(episode: dict) -> dict:
     for scene in scenes:
         plan = build_cinematic_shot_plan(episode, scene)
         shot_count += len(plan)
+        expected_end = max([float(x.get("end", 0.0)) for x in plan], default=0.0)
+        issues.extend(f"{scene.get('id')}: {issue}" for issue in _timeline_issues(plan, expected_end))
         if not scene.get("location"): issues.append(f"{scene.get('id')}: missing location for spatial cinematography")
         if not scene.get("action") and not scene.get("dialogue_lines") and not scene.get("dialogue"): issues.append(f"{scene.get('id')}: no action/dialogue basis for shot motivation")
-        if len(plan) > 1 and all(str(s.get("cut_reason", "")).lower() in {"", "coverage", "default"} for s in plan[1:]):
-            issues.append(f"{scene.get('id')}: camera changes lack explicit editorial motivation")
-    score = max(0, 100 - len(issues) * 20)
+    score = max(0, 100 - len(issues) * 15)
     return {"score": score, "issues": issues, "shot_count": shot_count}
 
 
